@@ -1,0 +1,99 @@
+---
+title: "RNA-seq Analysis: Differential Gene Expression in Breast Cancer\"
+  \"TCGA-BRCA | Tumor vs. Normal Tissue | DESeq2 Pipeline"
+author: "Juan David Atará Delgado | Bioingeniería & Biología Computacional"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Project Overview
+
+## 2. Quality Control — PCA
+
+```{r pca, echo=FALSE, fig.cap="PCA shows clear separation between tumor and normal samples along PC1 (31% variance), confirming strong biological signal."}
+knitr::include_graphics("../results/figures/01_PCA_calidad.png")
+```
+
+**Interpretation:** PC1 explains 31% of total variance and cleanly separates 
+tumor from normal tissue, validating data quality before differential 
+expression analysis.
+
+---
+
+## 3. Differential Expression Results
+
+```{r summary, echo=FALSE}
+res_df <- read.csv("../results/tables/DEG_anotado.csv")
+
+cat("Total genes analyzed:", nrow(res_df), "\n")
+cat("Significant DEGs (padj < 0.05):", sum(res_df$padj < 0.05, na.rm=TRUE), "\n")
+cat("Upregulated in tumor (LFC > 1):", 
+    sum(res_df$padj < 0.05 & res_df$log2FoldChange > 1, na.rm=TRUE), "\n")
+cat("Downregulated in tumor (LFC < -1):", 
+    sum(res_df$padj < 0.05 & res_df$log2FoldChange < -1, na.rm=TRUE), "\n")
+```
+
+### Volcano Plot
+
+```{r volcano, echo=FALSE, fig.cap="Volcano plot showing DEGs. Red points: significant by both adjusted p-value and fold-change. Top genes labeled."}
+knitr::include_graphics("../results/figures/02_Volcano_DEG.png")
+```
+
+### Top 10 Most Significant DEGs
+
+```{r top10, echo=FALSE}
+top10 
+  subset(!is.na(gene_symbol) & padj < 0.05 & abs(log2FoldChange) > 1) |>
+  head(10)
+
+knitr::kable(
+  top10[, c("gene_symbol", "log2FoldChange", "padj")],
+  digits = 3,
+  col.names = c("Gene", "Log2 Fold Change", "Adjusted p-value"),
+  caption = "Top 10 DEGs — Tumor vs. Normal (DESeq2)"
+)
+```
+
+---
+
+## 4. Hierarchical Clustering — Heatmap
+
+```{r heatmap, echo=FALSE, fig.cap="Heatmap of top 50 DEGs. Unsupervised clustering correctly separates tumor (red) from normal (green) samples."}
+knitr::include_graphics("../results/figures/03_Heatmap_top50.png")
+```
+
+**Key findings:**  
+- **Upregulated in tumor:** COL10A1, MMP11, MMP13, KIF14, NEK2, PLK1, BUB1 
+  — genes associated with cell proliferation, chromosomal instability, and 
+  extracellular matrix remodeling.  
+- **Downregulated in tumor:** LYVE1, CAV1, HSD17B13 — genes associated with 
+  normal stromal and adipose breast tissue.
+
+---
+
+## 5. Methods
+
+| Step | Tool | Parameters |
+|------|------|------------|
+| Data retrieval | TCGAbiolinks | STAR-Counts, hg38 |
+| Low-count filtering | DESeq2 | rowSums ≥ 10 |
+| Normalization | DESeq2 VST | blind = FALSE |
+| DE analysis | DESeq2 | Wald test, padj < 0.05 |
+| Gene annotation | org.Hs.eg.db | Ensembl → SYMBOL |
+
+---
+
+## 6. Conclusions
+
+This pipeline successfully identified **15,931 differentially expressed genes** 
+between breast tumor and normal tissue. Unsupervised clustering confirmed 
+biological validity of results. Top upregulated genes (COL10A1, MMP11, NEK2) 
+are consistent with published breast cancer literature, supporting the 
+robustness of this analysis.
+
+*Analysis performed with publicly available TCGA data. Full code available 
+on GitHub.*
