@@ -63,7 +63,7 @@ top20 <- res_df |>
 
 print(top20[, c("gene_id", "log2FoldChange", "padj")])
 
-cat("✅ Resultados guardados en results/tables/\n")
+cat(" Resultados guardados en results/tables/\n")
 
 
 #4
@@ -96,7 +96,7 @@ write.csv(res_df,
           "RNA-seq-BRCA-Analysis/results/tables/DEG_anotado.csv",
           row.names = FALSE)
 
-cat("✅ Tabla anotada guardada\n")
+cat(" Tabla anotada guardada\n")
 
 
 #5
@@ -141,7 +141,7 @@ EnhancedVolcano(res_volcano,
 )
 
 dev.off()
-cat("✅ Volcano plot guardado\n")
+cat(" Volcano plot guardado\n")
 
 #6
 
@@ -201,5 +201,5 @@ pheatmap(mat,
 )
 
 dev.off()
-cat("✅ Heatmap guardado\n")
+cat(" Heatmap guardado\n")
 
